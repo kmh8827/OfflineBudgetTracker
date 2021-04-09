@@ -7,6 +7,12 @@ request.onupgradeneeded = (event) => {
     db.createObjectStore('pending', { autoIncremenet: true });
 };
 
+request.onsuccess = (event) => {
+    db = event.target.result;
+
+    if (navigator.onLine) checkDatabase();
+}
+
 const saveRecord = (record) => {
 
 };

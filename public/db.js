@@ -13,6 +13,10 @@ request.onsuccess = (event) => {
     if (navigator.onLine) checkDatabase();
 }
 
+request.onerror = (event) => {
+    console.log('Error! ' + event.target.errorCode);
+}
+
 const saveRecord = (record) => {
 
 };

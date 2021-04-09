@@ -1,23 +1,70 @@
-const express = require("express");
-const mongoose = require("mongoose");
+let db;
+// create a new db request for a "budget" database.
+const request = indexedDB.open("budget", 1);
 
-const PORT = process.env.PORT || 3002;
+request.onupgradeneeded = function(event) {
+   // create object store called "pending" and set autoIncrement to true
+  const db = event.target.result;
+  db.createObjectStore("pending", { autoIncrement: true });
+};
 
-const app = express();
+request.onsuccess = function(event) {
+  db = event.target.result;
 
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+  // check if app is online before reading from db
+  if (navigator.onLine) {
+    checkDatabase();
+  }
+};
 
-app.use(express.static("public"));
+request.onerror = function(event) {
+  console.log("Woops! " + event.target.errorCode);
+};
 
-mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost/budget", {
-  useNewUrlParser: true,
-  useFindAndModify: false
-});
+function saveRecord(record) {
+  console.log(record);
+  // create a transaction on the pending db with readwrite access
+  const transaction = db.transaction(["pending"], "readwrite");
 
-// routes
-app.use(require("./routes/api.js"));
+  // access your pending object store
+  const store = transaction.objectStore("pending");
 
-app.listen(PORT, () => {
-  console.log(`App running on port ${PORT}!`);
-});
+  // add record to your store with add method.
+  store.add(record);
+}
+
+function checkDatabase() {
+  // open a transaction on your pending db
+  const transaction = db.transaction(["pending"], "readwrite");
+  // access your pending object store
+  const store = transaction.objectStore("pending");
+  // get all records from store and set to a variable
+  const getAll = store.getAll();
+
+  getAll.onsuccess = function() {
+    if (getAll.result.length > 0) {
+      fetch("/api/transaction/bulk", {
+        method: "POST",
+        body: JSON.stringify(getAll.result),
+        headers: {
+          Accept: "application/json, text/plain, */*",
+          "Content-Type": "application/json"
+        }
+      })
+      .then(response => response.json())
+      .then(() => {
+        // if successful, open a transaction on your pending db
+        const transaction = db.transaction(["pending"], "readwrite");
+
+        // access your pending object store
+        const store = transaction.objectStore("pending");
+
+        // clear all items in your store
+        store.clear();
+      });
+    }
+  };
+}
+
+// listen for app coming back online
+window.addEventListener("online", checkDatabase);

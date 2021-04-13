@@ -60,8 +60,7 @@ const FILES_TO_CACHE = [
         }).catch(err => console.log(err))
       );
   
-      return;
-    }
+      retu
  
     evt.respondWith(
       caches.match(evt.request).then(function(response) {

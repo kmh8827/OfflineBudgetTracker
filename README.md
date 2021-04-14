@@ -1,4 +1,4 @@
-![image](https://user-images.githubusercontent.com/73497003/114720982-7a2bfd80-9d06-11eb-877e-0c481bc15b0c.png)
+![image](https://user-images.githubusercontent.com/73497003/114721289-cb3bf180-9d06-11eb-9180-2bd5f6bd2fa3.png)
 
 # Offline Budget Tracker <img align="right" src=" ">
 &nbsp;  
